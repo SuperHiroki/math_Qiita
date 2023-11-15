@@ -1,0 +1,278 @@
+
+<head>
+  <meta charset="UTF-8">
+  <title>記事作成フォーム</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+
+  <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+
+  <script type="text/javascript" id="MathJax-script" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-mml-chtml.min.js"></script>
+
+  <style>
+    .custom-padding {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  </style>
+
+
+</head>
+
+<body>
+
+  <div class="max-w-full custom-padding py-6">
+
+    <div class="mb-4">
+      <h1 class="text-4xl">記事（質問）作成</h1>
+    </div>
+
+    <div>
+      <%= form_with(model: @post, local: true, url: (local_assigns[:edit] ? "/#{current_user.username}/items/#{@post.link}" : @post), method: (local_assigns[:edit] ? :patch : nil)) do |form| %>
+        <div id="error_explanation">
+          <% if @post.errors.any? %>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+              <strong class="font-bold">Oops!</strong>
+              <span class="block sm:inline"><%= pluralize(@post.errors.count, "error") %> prohibited this post from being saved:</span>
+              <ul class="list-disc list-inside mt-2">
+                <% @post.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="mb-4">
+            <%= form.label :title, class: "block text-lg font-bold text-gray-700 mb-2" %>
+            <%= form.text_field :title, class: "form-input mt-1 block w-full border-4 border-gray-300 rounded-md h-10" %>
+        </div>
+
+        <div class="mb-4">
+            <%= form.label :tags, class: "block text-lg font-bold text-gray-700 mb-2" %>
+            <%= form.text_field :tags, value: @post.tags.map(&:name).join(', '), placeholder: "タグをカンマ区切りで入力", class: "form-input mt-1 block w-full border-4 border-gray-300 rounded-md h-10" %>
+        </div>
+
+        <div class="mb-4 w-64">
+            <%= form.label :post_type, class: "block text-lg font-bold text-gray-700 mb-2" %>
+            <%= form.select :post_type, [['Article', 'article'], ['Question', 'question']], {}, class: "form-select block w-full mt-1 text-bs py-2" %>
+        </div>
+
+        <!-- 表示切り替えボタン -->
+        <div class="mb-4">
+            <button type="button" id="edit-btn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2">編集</button>
+            <button type="button" id="preview-btn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2">プレビュー</button>
+            <button type="button" id="splitview-btn" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">分割表示</button>
+        </div>
+        
+        <!-- コンテンツ入力エリア -->
+        <div id="editor" class="mb-4">
+            <%= form.label :content, class: "block text-lg text-sm font-bold text-gray-700 mb-2" %>
+            <%= form.text_area :content, rows: 27, class: "form-textarea mt-1 block w-full border-4 border-gray-700", id: "editor-textarea" %>
+        </div>
+        
+        <!-- プレビューエリア -->
+        <div id="preview" class="hidden mb-4">
+            <div class="bg-white p-4 rounded-md border-4 border-gray-700">
+            <div class = 'reset' id="preview-content"></div> 
+            </div>
+        </div>
+        
+        <!-- 分割表示エリア -->
+        <div id="splitview" class="hidden mb-4 flex">
+            <div class="w-1/2">
+            <%= form.text_area :content2, rows: 27, class: "form-textarea mt-1 block w-full border-4 border-gray-700", id: "splitview-textarea" %>
+            </div>
+            <div class="w-1/2 ml-4">
+            <div class="bg-white p-4 rounded-md border-4 border-gray-700 overflow-y-auto" style="height: calc(27 * 1.5rem + 2rem);">
+                <div class = 'reset' id="splitview-content"></div> 
+            </div>
+            </div>
+        </div>
+
+        <div  class="mb-4">
+            <%= form.submit "一次保存", name: 'commit', value: 'Save', class: "bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" %>
+        </div>
+        <div class="flex items-center">
+            <%= form.submit "記事を作成", name: 'commit', value: 'Create Article', class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2" %>
+            <%= form.submit "下書きを保存", name: 'commit', value: 'Save Draft', class: "bg-green-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" %>
+        </div>
+      <% end %>
+    </div>  
+  </div>
+
+
+
+<script>
+var editBtn, previewBtn, splitBtn;
+var editor, preview, splitView;
+var editorTextarea, previewContent, splitTextarea, splitPreview;
+var myHtml;
+
+window.onload = function() {
+  console.log('ページが読み込まれました');
+
+  editBtn = document.getElementById('edit-btn');
+  previewBtn = document.getElementById('preview-btn');
+  splitBtn = document.getElementById('splitview-btn');
+
+  editor = document.getElementById('editor');
+  preview = document.getElementById('preview');
+  splitView = document.getElementById('splitview');
+
+  editorTextarea = document.getElementById('editor-textarea');
+  previewContent = document.getElementById('preview-content');
+  splitTextarea = document.getElementById('splitview-textarea');
+  splitPreview = document.getElementById('splitview-content');
+
+  if (sanitizeHtml(editorTextarea.value) == ''){
+    myHtml = template;
+    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+    console.log(template);
+    editorTextarea.value = myHtml;
+  }else{
+    myHtml = sanitizeHtml(editorTextarea.value);
+    console.log("VCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
+  }
+
+  MathJax.typesetPromise().then(() => {
+    console.log("MathJax has finished reprocessing.");
+  });
+
+  // イベントリスナーの設定
+  setupEventListeners();
+};
+
+function setupEventListeners() {
+  // 編集ボタンのイベント
+  editBtn.addEventListener('click', () => {
+    editorTextarea.value = myHtml;
+    editor.classList.remove('hidden');
+    preview.classList.add('hidden');
+    splitView.classList.add('hidden');
+  });
+
+  // プレビューボタンのイベント
+  previewBtn.addEventListener('click', () => {
+    previewContent.innerHTML = sanitizeHtml(myHtml);
+    MathJax.typesetPromise().then(() => {
+      console.log("MathJax has finished reprocessing.");
+    });
+    editor.classList.add('hidden');
+    preview.classList.remove('hidden');
+    splitView.classList.add('hidden');
+  });
+
+  // 分割表示ボタンのイベント
+  splitBtn.addEventListener('click', () => {
+    splitTextarea.value = myHtml;
+    splitPreview.innerHTML = sanitizeHtml(myHtml);
+    MathJax.typesetPromise().then(() => {
+      console.log("MathJax has finished reprocessing.");
+    });
+    editor.classList.add('hidden');
+    preview.classList.add('hidden');
+    splitView.classList.remove('hidden');
+    editorTextarea.value = myHtml;
+  });
+
+  // リアルタイム処理
+  splitTextarea.addEventListener('input', () => {
+    let tempSanitizedHtml = sanitizeHtml(splitTextarea.value);
+    myHtml = tempSanitizedHtml;
+    splitPreview.innerHTML = tempSanitizedHtml; 
+    MathJax.typesetPromise().then(() => {
+      console.log("MathJax has finished reprocessing.");
+    });
+  });
+
+  editorTextarea.addEventListener('input', () => {
+    let tempSanitizedHtml = sanitizeHtml(editorTextarea.value);
+    myHtml = tempSanitizedHtml;
+  });
+}
+
+function sanitizeHtml(html) {
+  return DOMPurify.sanitize(html);
+}
+
+const template2 = `
+<div class="container mx-auto mt-8 p-4">
+<h1 class="text-3xl font-bold mb-4 text-center">数学の基本</h1>
+
+<h2 class="text-2xl font-semibold mt-6">目次</h2>
+<ul class="list-disc list-inside">
+  <li><a class="text-blue-500 hover:text-blue-700" href="#section1">1. 二次方程式</a></li>
+  <li><a class="text-blue-500 hover:text-blue-700" href="#section2">2. 微分</a></li>
+  <li><a class="text-blue-500 hover:text-blue-700" href="#section3">3. 積分</a></li>
+</ul>
+
+<h2 class="text-xl font-semibold mt-6" id="section1">1. 二次方程式</h2>
+<p class="mt-2">二次方程式は一般に \( ax^2 + bx + c = 0 \) の形で表されます。ここで、\( a \neq 0 \)です。</p>
+<p class="mt-2">二次方程式の解は次の公式で求められます：</p>
+<div class="p-4 bg-gray-200 rounded-md">
+  \[ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a} \]
+</div>
+
+<h2 class="text-xl font-semibold mt-6" id="section2">2. 微分</h2>
+<p class="mt-2">関数 \( f(x) \) の微分は \( f'(x) \) と表され、その関数の傾きを表します。</p>
+<p class="mt-2">例えば、\( f(x) = x^2 \) の微分は次のようになります：</p>
+<div class="p-4 bg-gray-200 rounded-md">
+  \[ f'(x) = 2x \]
+</div>
+
+<h2 class="text-xl font-semibold mt-6" id="section3">3. 積分</h2>
+<p class="mt-2">関数の積分は、その曲線と x 軸との間の面積を表します。</p>
+<p class="mt-2">例えば、\( \int_0^1 x^2 \, dx \) の積分は次のように計算されます：</p>
+<div class="p-4 bg-gray-200 rounded-md">
+  \[ \int_0^1 x^2 \, dx = \frac{1}{3} \]
+</div>
+</div>
+`;
+
+const template = `
+<div class="container mx-auto mt-8 p-4">
+  <h1 class="text-3xl font-bold mb-4 text-center">数学の基本</h1>
+
+  <h2 class="text-2xl font-semibold mt-6">目次</h2>
+  <ul class="list-disc list-inside">
+    <li><a class="text-blue-500 hover:text-blue-700" href="#section1">1. 二次方程式</a></li>
+    <li><a class="text-blue-500 hover:text-blue-700" href="#section2">2. 微分</a></li>
+    <li><a class="text-blue-500 hover:text-blue-700" href="#section3">3. 積分</a></li>
+  </ul>
+
+  <h2 class="text-xl font-semibold mt-6" id="section1">1. 二次方程式</h2>
+  <p class="mt-2">二次方程式は一般に \\( ax^2 + bx + c = 0 \\) の形で表されます。ここで、\\( a \\neq 0 \\)です。</p>
+  <p class="mt-2">二次方程式の解は次の公式で求められます：</p>
+  <div class="p-4 bg-gray-200 rounded-md">
+    \\[ x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} \\]
+  </div>
+
+  <h2 class="text-xl font-semibold mt-6" id="section2">2. 微分</h2>
+  <p class="mt-2">関数 \\( f(x) \\) の微分は \\( f'(x) \\) と表され、その関数の傾きを表します。</p>
+  <p class="mt-2">例えば、\\( f(x) = x^2 \\) の微分は次のようになります：</p>
+  <div class="p-4 bg-gray-200 rounded-md">
+    \\[ f'(x) = 2x \\]
+  </div>
+
+  <h2 class="text-xl font-semibold mt-6" id="section3">3. 積分</h2>
+  <p class="mt-2">関数の積分は、その曲線と x 軸との間の面積を表します。</p>
+  <p class="mt-2">例えば、\\( \\int_0^1 x^2 \\, dx \\) の積分は次のように計算されます：</p>
+  <div class="p-4 bg-gray-200 rounded-md">
+    \\[ \\int_0^1 x^2 \\, dx = \\frac{1}{3} \\]
+  </div>
+</div>
+`;
+
+
+
+</script>
+
+
+
+
+
+</body>
+

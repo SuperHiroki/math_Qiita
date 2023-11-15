@@ -1,0 +1,73 @@
+<head>
+  <!-- Tailwind CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="container mx-auto my-8 p-6 bg-white rounded shadow">
+  <%= search_form_for @q, url: request.path, method: :get, class: "space-y-4" do |f| %>
+    <div class="flex flex-col sm:flex-row items-center space-x-0 sm:space-x-4">
+      <%= f.label :title_or_content_or_tags_name_or_user_username_cont_all, "検索:", class: "w-32 text-lg font-semibold" %>
+      <%= f.search_field :title_or_content_or_tags_name_or_user_username_cont_all, class: "form-input mt-1 block w-full border-2 border-gray-300 focus:border-gray-500 focus:ring focus:ring-gray-200 rounded-md shadow-sm transition duration-150 ease-in-out text-base sm:text-lg" %>
+    </div>
+
+    <div class="flex flex-col sm:flex-row items-center space-x-0 sm:space-x-4">
+      <%= f.label :s, "並び替え:", class: "w-32 text-lg font-semibold" %>
+      <%= f.select :s, options_for_select([['作成日', 'created_at_desc'], ['最終更新日', 'updated_at_desc'], ['いいね数', 'likes_count_desc'], ['コメント数', 'comments_count_desc']], selected: params.dig(:q, :s)), {}, class: "form-select mt-1 block w-full border-2 border-gray-300 focus:border-gray-500 focus:ring focus:ring-gray-200 rounded-md shadow-sm transition duration-150 ease-in-out text-base sm:text-lg" %>
+    </div>
+
+    <div>
+      <%= f.submit "検索", class: "btn bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out" %>
+    </div>
+  <% end %>
+</div>
+
+<div class="container mx-auto my-8">
+  <%= paginate @posts, class: "flex justify-center items-center space-x-1" %>
+</div>
+
+
+
+
+<div class="container mx-auto my-8">
+  <% if @posts && @posts.any? %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <% @posts.each do |post| %>
+          <div class="post bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6">
+            <% if post.user.icon_photo_name != "default.png" %>
+              <%= link_to image_tag(post.user.generate_presigned_url('my-unique-bucket-name-shiroatohiro', post.user.icon_photo_name), alt: "User icon", class: "h-12 w-12 rounded-full mx-auto"), "/#{post.user.username}/mypage/profile" %>
+            <% else %>
+              <%= link_to image_tag("default.png", alt: "Default icon", class: "h-12 w-12 rounded-full mx-auto"), "/#{post.user.username}/mypage/profile" %>
+            <% end %>
+            <% if local_assigns[:edit_path] %>
+              <%= link_to "/#{post.user.username}/items/#{post.link}/edit", class: "no-underline hover:underline" do %>
+                <h2 class="text-2xl text-blue-800 font-bold mb-2"><%= post.title %></h2>
+              <% end %>
+            <% else %>
+              <%= link_to "/#{post.user.username}/items/#{post.link}", class: "no-underline hover:underline" do %>
+                <h2 class="text-2xl text-blue-800 font-bold mb-2"><%= post.title %></h2>
+              <% end %>
+            <% end %>
+            <div class="tags flex flex-wrap mt-4">
+              <% post.tags.each do |tag| %>
+                <span class="tag mr-2 mb-2 inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
+                  <%= tag.name %>
+                </span>
+              <% end %>
+            </div>
+            <div class="text-gray-600 text-sm">
+              <p>作成日: <%= post.created_at.strftime('%Y/%m/%d %H:%M') %></p>
+              <p>最終更新日: <%= post.updated_at.strftime('%Y/%m/%d %H:%M') %></p>
+              <p>記事（質問）作成者: <%= post.user.username %></p>
+            </div>
+          </div>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="text-center text-gray-700">表示する記事がありません。</p>
+  <% end %>
+</div>
+
+
+</body>

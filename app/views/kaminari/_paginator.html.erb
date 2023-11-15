@@ -1,0 +1,55 @@
+<head>
+  <!-- Tailwind CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<%# The container tag
+  - available local variables
+    current_page:  a page object for the currently displayed page
+    total_pages:   total number of pages
+    per_page:      number of items to fetch per page
+    remote:        data-remote
+    paginator:     the paginator that renders the pagination tags inside
+-%>
+
+
+<%= paginator.render do -%>
+  <nav class="flex mx-32 gap-1 pagination" role="navigation" aria-label="pager">
+  
+    <% if !current_page.first? %>
+      <div class="flex-1 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+        <%= first_page_tag unless current_page.first? %>
+      </div>
+      <div class="flex-1 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+        <%= prev_page_tag unless current_page.first? %>
+      </div>
+    <% end %>
+
+    <% each_page do |page| -%>
+      <% if page.display_tag? -%>
+        <div class="flex-1 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+          <%= page_tag page %>
+        </div>
+      <% elsif !page.was_truncated? -%>
+        <div class="flex-1 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+          <%= gap_tag %>
+        </div>
+      <% end -%>
+    <% end -%>
+
+    <% unless current_page.out_of_range? %>
+      <div class="flex-1 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+        <%= next_page_tag unless current_page.last? %>
+      </div>
+      <div class="flex-1 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+        <%= last_page_tag unless current_page.last? %>
+      </div>
+    <% end %>
+  </nav>
+
+  <div class="flex justify-center mt-4">
+    <div class="text-black font-bold">
+      <p>Page: <%= current_page %></p>
+    </div>
+  </div>
+<% end -%>

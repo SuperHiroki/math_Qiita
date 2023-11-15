@@ -1,0 +1,66 @@
+<head>
+  <!-- Tailwind CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<%= render 'shared/header' %>
+<%= render 'shared/header_settings' %>
+
+<div class="container mx-auto my-8 p-8 bg-white shadow-md rounded">
+    <div class="mb-6">
+        <h1 class="text-3xl font-semibold mb-6">アカウント設定</h1>
+    </div>
+
+    <%= form_with(model: @user, url: update_account_settings_path, method: :patch, local: true, class: "space-y-4") do |form| %>
+        
+        <div id="error_explanation">
+          <% if @user.errors.any? %>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+              <strong class="font-bold">Oops!</strong>
+              <span class="block sm:inline"><%= pluralize(@user.errors.count, "error") %> prohibited this post from being saved:</span>
+              <ul class="list-disc list-inside mt-2">
+                <% @user.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+        </div>
+      
+        <div class="field">
+          <%= form.label :username, class: "block text-sm font-medium text-gray-700" %>
+          <%= form.text_field :username, class: "mt-2 block w-full border-4 border-gray-300 shadow-sm rounded-md" %>
+        </div>
+      
+        <div class="field">
+          <%= form.label :email, class: "block text-sm font-medium text-gray-700" %>
+          <%= form.email_field :email, class: "mt-2 block w-full border-4 border-gray-300 shadow-sm rounded-md" %>
+        </div>
+
+        <div class="field">
+            <%= form.label :language, class: "block text-sm font-medium text-gray-700" %>
+            <%= form.select :language, [['Japanese', 'Japanese'], ['English', 'English']], {}, class: "mt-2 block w-full border-4 border-gray-300 shadow-sm rounded-md" %>
+        </div>
+
+        <div class="field">
+            <% if @user.icon_photo_name == "default.png" %>
+                <%= image_tag "default.png", alt: "Default icon", class: "h-24 w-24 rounded-full mx-auto" %>
+            <% else %>
+                <%= image_tag @user.generate_presigned_url('my-unique-bucket-name-shiroatohiro', @user.icon_photo_name), alt: "User icon", class: "h-24 w-24 rounded-full mx-auto" %>
+            <% end %>
+        </div>
+        
+        <div class="field mb-6">
+            <%= form.label :icon_photo, class: "block text-sm font-medium text-gray-700" %>
+            <%= form.file_field :icon_photo, class: "mt-2 block w-full border-4 border-gray-300 shadow-sm rounded-md" %>
+        </div>
+
+        <div class="actions flex justify-center mt-6">
+          <%= form.submit "保存", class: "px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring" %>
+        </div>
+    <% end %>
+</div>
+
+</body>

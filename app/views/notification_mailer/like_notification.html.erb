@@ -1,0 +1,11 @@
+<!-- app/views/notification_mailer/like_notification.html.erb -->
+<h1>いいねの通知</h1>
+<h2>あなたは<%= @likeable.user.username %>です。</h2>
+<% if @likeable.is_a?(Post) %>
+  <p>記事（質問）に新しいいいねがつきました</p>
+  <p>記事（質問）タイトル: <%= @likeable.title %></p>
+<% elsif @likeable.is_a?(Comment) %>
+  <p>コメントに新しいいいねがつきました</p>
+  <p>関連する記事（質問）のタイトル: <%= @likeable.post.title %></p>
+  <p>コメント内容: <%= @likeable.body %></p>
+<% end %>

@@ -1,0 +1,20 @@
+default: &default
+  adapter: mysql2
+  encoding: utf8mb4
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: admin  # RDS ユーザー名
+  password: 622326KiriHiro  # RDS パスワード
+  host: terraform-20231107111448185200000002.c9x6fhxtxcuv.ap-northeast-1.rds.amazonaws.com  # RDS エンドポイント
+
+development:
+  <<: *default
+  database: mydb  # これはRDS上の開発用データベース名に変更する必要があります
+
+test:
+  <<: *default
+  database: mydb  # これはRDS上のテスト用データベース名に変更する必要があります
+
+production:
+  <<: *default
+  database: mydb  # これはRDS上の本番用データベース名に変更する必要があります
+

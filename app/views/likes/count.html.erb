@@ -1,0 +1,50 @@
+<!-- views/likes/count.html.erb -->
+<head>
+  <!-- Tailwind CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100">
+  <%= render 'shared/header' %>
+
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">ユーザー別いいね数ランキング</h1>
+
+    <div class="flex justify-center mb-6">
+      <%= form_with(url: likes_count_path, method: :get, local: true) do |form| %>
+        <div class="inline-block relative w-64">
+          <%= form.select :sort, options_for_select([['合計いいね数', 'total_likes'], ['記事のいいね数', 'article_likes'], ['質問のいいね数', 'question_likes'], ['コメントのいいね数', 'comment_likes'], ['回答のいいね数', 'answer_likes']], @sort), {}, { onchange: 'this.form.submit();', class: "block appearance-none w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline" } %>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+              <path d="M5.5 7h9l-4.5 6-4.5-6z"/>
+            </svg>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+      <ul>
+        <% @users.each do |user| %>
+          <li class="px-4 py-4 sm:px-6">
+            <div class="flex items-center justify-between">
+                <% if user.icon_photo_name != "default.png" %>
+                    <%= link_to image_tag(user.generate_presigned_url('my-unique-bucket-name-shiroatohiro', user.icon_photo_name), alt: "User icon", class: "h-12 w-12 rounded-full mx-auto"), "/#{user.username}/mypage/profile" %>
+                <% else %>
+                    <%= link_to image_tag("default.png", alt: "Default icon", class: "h-12 w-12 rounded-full mx-auto"), "/#{user.username}/mypage/profile" %>
+                <% end %>
+              <div class="text-sm leading-5 font-medium text-gray-900"><%= user.username %></div>
+              <div class="flex flex-col sm:flex-row">
+                <div class="text-sm leading-5 text-gray-500 sm:mr-4"><span class="font-bold">合計いいね数:</span> <%= @total_likes[user.id] || 0 %></div>
+                <div class="text-sm leading-5 text-gray-500 sm:mr-4"><span class="font-bold">記事のいいね数:</span> <%= @likes_for_articles[user.id] || 0 %></div>
+                <div class="text-sm leading-5 text-gray-500 sm:mr-4"><span class="font-bold">質問のいいね数:</span> <%= @likes_for_questions[user.id] || 0 %></div>
+                <div class="text-sm leading-5 text-gray-500 sm:mr-4"><span class="font-bold">コメントのいいね数:</span> <%= @likes_for_comments[user.id] || 0 %></div>
+                <div class="text-sm leading-5 text-gray-500"><span class="font-bold">回答のいいね数:</span> <%= @likes_for_answers[user.id] || 0 %></div>
+              </div>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+</body>

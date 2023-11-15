@@ -1,0 +1,85 @@
+<head>
+  <!-- Tailwind CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="container mx-auto my-4 pl-10">
+  <div>
+    <p class="text-2xl font-semibold"><%= @target_user.username %>のマイページ</p>
+  </div> 
+</div>
+
+<div class="bg-gray-400">
+  <div class="max-w-5xl mx-auto px-4">
+    <div class="flex justify-between items-center py-2">
+      <div class="flex space-x-4">
+        <!-- プロフィール -->
+        <%= link_to 'プロフィール', "/#{@target_user.username}/mypage/profile", 
+            class: "px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-600 #{'bg-gray-800 text-white' if request.path == "/#{@target_user.username}/mypage/profile"}" %>
+
+        <!-- 記事 -->
+        <%= link_to '記事', "/#{@target_user.username}/mypage/articles", 
+            class: "px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-600 #{'bg-gray-800 text-white' if request.path == "/#{@target_user.username}/mypage/articles" || request.path == "/#{@target_user.username}/mypage/comments"}" %>
+
+        <!-- 質問 -->
+        <%= link_to '質問', "/#{@target_user.username}/mypage/questions", 
+            class: "px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-600 #{'bg-gray-800 text-white' if request.path == "/#{@target_user.username}/mypage/questions" || request.path == "/#{@target_user.username}/mypage/answers"}" %>
+
+        <!-- いいね -->
+        <%= link_to 'いいね', "/#{@target_user.username}/mypage/likes/articles", 
+            class: "px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-600 #{'bg-gray-800 text-white' if request.path.include?("/#{@target_user.username}/mypage/likes")}" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- タブのサブメニュー -->
+<div class="bg-gray-200">
+  <div class="max-w-5xl mx-auto px-4">
+    <div class="flex space-x-4 py-1">
+      <% base_path = "/#{@target_user.username}/mypage" %>
+      <% if current_page?("#{base_path}/articles") || current_page?("#{base_path}/comments") %>
+        <div class="bg-gray-200">
+          <div class="max-w-5xl mx-auto px-4">
+            <div class="flex space-x-4 py-1">
+              <%= link_to '記事', "#{base_path}/articles", 
+                  class: "px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-400 #{'bg-gray-800 text-white' if current_page?("#{base_path}/articles")}" %>
+              <%= link_to 'コメント', "#{base_path}/comments", 
+                  class: "px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-400 #{'bg-gray-800 text-white' if current_page?("#{base_path}/comments")}" %>
+            </div>
+          </div>
+        </div>
+      <% elsif current_page?("#{base_path}/questions") || current_page?("#{base_path}/answers") %>
+        <div class="bg-gray-200">
+          <div class="max-w-5xl mx-auto px-4">
+            <div class="flex space-x-4 py-1">
+              <%= link_to '質問', "#{base_path}/questions", 
+                  class: "px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-400 #{'bg-gray-800 text-white' if current_page?("#{base_path}/questions")}" %>
+              <%= link_to '回答', "#{base_path}/answers", 
+                  class: "px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-400 #{'bg-gray-800 text-white' if current_page?("#{base_path}/answers")}" %>
+            </div>
+          </div>
+        </div>
+      <% elsif request.path.include?("#{base_path}/likes") %>
+        <div class="bg-gray-200">
+          <div class="max-w-5xl mx-auto px-4">
+            <div class="flex space-x-4 py-1">
+              <%= link_to '記事', "#{base_path}/likes/articles", 
+                  class: "px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-400 #{'bg-gray-800 text-white' if request.path == "#{base_path}/likes/articles"}" %>
+              <%= link_to 'コメント', "#{base_path}/likes/comments", 
+                  class: "px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-400 #{'bg-gray-800 text-white' if request.path == "#{base_path}/likes/comments"}" %>
+              <%= link_to '質問', "#{base_path}/likes/questions", 
+                  class: "px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-400 #{'bg-gray-800 text-white' if request.path == "#{base_path}/likes/questions"}" %>
+              <%= link_to '回答', "#{base_path}/likes/answers", 
+                  class: "px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-400 #{'bg-gray-800 text-white' if request.path == "#{base_path}/likes/answers"}" %>
+            </div>
+          </div>
+        </div>
+      <% end %>      
+    </div>
+  </div>
+</div>
+
+</body>

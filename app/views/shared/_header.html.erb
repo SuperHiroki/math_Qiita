@@ -1,0 +1,88 @@
+<head>
+  <!-- Tailwind CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- ヘッダー部分 -->
+<div class="flex justify-between items-center py-4 px-6 bg-gray-900 text-white">
+  <!-- 左側のセクション -->
+  <div class="flex items-center space-x-4">
+    <%= link_to 'ホーム', '/', 
+          class: "tab-button bg-white text-gray-900 hover:bg-gray-300 hover:text-white font-bold py-2 px-4 rounded #{'bg-gray-500 text-blue-100' if current_page?('/')}" %>
+    <%= link_to '記事', '/articles', 
+          class: "tab-button bg-white text-gray-900 hover:bg-gray-300 hover:text-white font-bold py-2 px-4 rounded #{'bg-gray-500 text-blue-100' if current_page?('/articles')}" %>
+    <%= link_to '質問', '/questions', 
+          class: "tab-button bg-white text-gray-900 hover:bg-gray-300 hover:text-white font-bold py-2 px-4 rounded #{'bg-gray-500 text-blue-100' if current_page?('/questions')}" %>
+    <%= link_to '記事作成', '/posts/new', 
+          class: "tab-button bg-white text-gray-900 hover:bg-gray-300 hover:text-white font-bold py-2 px-4 rounded #{'bg-gray-500 text-blue-100' if current_page?('/posts/new')}" %>
+    <%= link_to 'いいねランキング', '/likes/count', 
+          class: "tab-button bg-white text-gray-900 hover:bg-gray-300 hover:text-white font-bold py-2 px-4 rounded #{'bg-gray-500 text-blue-100' if current_page?('/likes/count')}" %>
+  </div>
+  <!-- 右側のセクション -->
+  <div class="flex items-center space-x-4">
+    <!-- ユーザー名またはゲスト表示 -->
+    <% if user_signed_in? %>
+      <span><%= current_user.username %></span>
+    <% else %>
+      <span>Guest</span>
+    <% end %>
+    <!-- ユーザーアイコンとドロップダウンメニュー -->
+    <div class="relative">
+      <button onclick="toggleDropdown()" class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-gray-800 text-sm font-medium text-white hover:bg-gray-700" id="menu-button" aria-expanded="true" aria-haspopup="true">
+        <% if current_user && current_user.icon_photo_name != "default.png" %>
+            <%= image_tag current_user.generate_presigned_url('my-unique-bucket-name-shiroatohiro', current_user.icon_photo_name), alt: "User icon", class: "h-12 w-12 rounded-full mx-auto" %>
+        <% else %>
+            <%= image_tag "default.png", alt: "Default icon", class: "h-12 w-12 rounded-full mx-auto" %>
+        <% end %>
+      </button>
+      <div id="dropdown" class="hidden origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+        <!-- ドロップダウンメニューアイテム -->
+        <%= link_to 'ログイン', new_user_session_path, class: 'text-gray-700 block px-4 py-2 text-sm', role: 'menuitem', tabindex: '-1' %>
+        <%= link_to 'ログアウト', destroy_user_session_path, method: :delete, class: 'text-gray-700 block px-4 py-2 text-sm', role: 'menuitem', tabindex: '-1' %>
+        <%= link_to 'サインアップ', new_user_registration_path, class: 'text-gray-700 block px-4 py-2 text-sm', role: 'menuitem', tabindex: '-1' %>
+        <%= link_to '設定', '/settings/account', class: 'text-gray-700 block px-4 py-2 text-sm', role: 'menuitem', tabindex: '-1' %>
+        <% if current_user %>
+          <%= link_to 'マイページ', "/#{current_user.username}/mypage/profile", class: 'text-gray-700 block px-4 py-2 text-sm', role: 'menuitem', tabindex: '-1' %>
+        <% else %>
+          <%= link_to 'マイページ', "/users/sign_in", class: 'text-gray-700 block px-4 py-2 text-sm', role: 'menuitem', tabindex: '-1' %>
+        <% end %>
+        <%= link_to '下書き一覧', '/drafts', class: 'text-gray-700 block px-4 py-2 text-sm', role: 'menuitem', tabindex: '-1' %>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<% flash.each do |key, message| %>
+  <div class="<%= flash_class(key) %> p-4 mb-4 text-sm text-white rounded-lg" role="alert">
+    <%= message %>
+  </div>
+<% end %>
+
+
+
+
+<script>
+  // Dropdown toggle function
+  function toggleDropdown() {
+    document.getElementById("dropdown").classList.toggle("hidden");
+  }
+  
+  // Close the dropdown if the user clicks outside of it
+  window.onclick = function(event) {
+    if (!event.target.matches('#menu-button')) {
+      var dropdowns = document.getElementsByClassName("dropdown-content");
+      for (var i = 0; i < dropdowns.length; i++) {
+        var openDropdown = dropdowns[i];
+        if (!openDropdown.classList.contains('hidden')) {
+          openDropdown.classList.add('hidden');
+        }
+      }
+    }
+  }
+</script>
+
+</body>

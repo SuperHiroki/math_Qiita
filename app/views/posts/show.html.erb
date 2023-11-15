@@ -1,0 +1,125 @@
+<head>
+  <!-- Tailwind CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+  <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+
+  <script type="text/javascript" id="MathJax-script" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-mml-chtml.min.js"></script>
+
+</head>
+
+<body class="bg-gray-100">
+
+<%= render 'shared/header' %>
+
+<div class="container mx-auto p-6">
+  <div class="bg-white shadow-lg rounded-lg overflow-hidden p-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-2"><%= @post.title %></h1>
+    <p class="text-md text-gray-600"><strong>Type:</strong> <%= @post.post_type %></p>
+    <p class="text-md text-gray-600"><strong>Author:</strong> <%= @post.user.username %></p>
+    <p class="text-md text-gray-600"><strong>Created at:</strong> <%= @post.created_at.strftime("%Y-%m-%d %H:%M:%S") %></p>
+    <p class="text-md text-gray-600"><strong>Updated at:</strong> <%= @post.updated_at.strftime("%Y-%m-%d %H:%M:%S") %></p>
+    <div class="mt-4">
+      <strong>Content:</strong>
+      <div class="prose max-w-none mt-2"><div class='reset'><%= raw @post.content %></div></div>
+    </div>
+  </div>
+</div>
+
+
+<% if current_user == @post.user %>
+  <div class="container mx-auto p-6">
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden p-6">
+      <!-- ... その他の投稿内容 ... -->
+      <div class="mt-4 flex justify-end space-x-2">
+        <%= link_to "/#{@post.user.username}/items/#{@post.link}/edit", class: "inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" do %>
+          編集
+        <% end %>
+        <%= link_to "/#{@post.user.username}/items/#{@post.link}", method: :delete, data: { confirm: "この記事を削除してもよろしいですか？" }, class: "inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" do %>
+          削除
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+
+<% if @post.draft == false %>
+  <!-- いいねボタン -->
+  <div class="container mx-auto p-6">
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-4 flex items-center justify-between">
+      <!-- いいねの数 -->
+      <div class="text-gray-700 font-bold">いいねの数: <%= @likes_count %></div>
+      <!-- いいね/いいね解除ボタン -->
+        <% if current_user %>
+          <% like = current_user.likes.find_by(likeable: @post) %>
+          <% if like %>
+            <%= link_to post_like_path(@post, like), method: :delete, class: "bg-white h-12 w-12 rounded-full overflow-hidden relative", data: { confirm: "いいねを解除しますか？" } do %>
+              <%= image_tag "heart.png", alt: "いいね解除", class: "absolute inset-0 h-full w-full" %>
+              <div class="absolute inset-0 bg-gray-500 opacity-0 hover:opacity-30"></div>
+            <% end %>
+          <% else %>
+            <%= link_to post_likes_path(@post), method: :post, class: "bg-white h-12 w-12 rounded-full overflow-hidden relative" do %>
+              <%= image_tag "heart_frame.png", alt: "いいね", class: "absolute inset-0 h-full w-full" %>
+              <div class="absolute inset-0 bg-gray-500 opacity-0 hover:opacity-30"></div>
+            <% end %>
+          <% end %>
+        <% end %>
+    </div>
+  </div>
+
+  <!-- コメント -->
+  <div class="container mx-auto p-6">
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-4">
+        <div class="mb-2">
+          <span class="text-gray-700 font-bold">コメント ( <%= @comments.size %> )</span>
+        </div>
+        <div class='mb-8'>
+          <% @comments.each do |comment| %>
+            <div class="bg-white border-t border-gray-200 rounded-lg p-6 mb-4 flex items-center justify-between">
+              <div class="">
+                <p class="text-gray-600"><%= comment.body %></p>
+                <p class="text-xs text-gray-500">投稿者: <%= comment.user.username %> | 投稿日: <%= comment.created_at.strftime("%Y-%m-%d %H:%M:%S") %></p>
+                <p class="text-xs text-gray-500">いいね数: <%= @likes_count_for_comments[comment.id] || 0 %></p>
+              </div>
+              <% if current_user %>
+                <% like = current_user.likes.find_by(likeable: comment) %>
+                <% if like %>
+                  <%= link_to comment_like_path(comment, like), method: :delete, class: "bg-white h-12 w-12 rounded-full overflow-hidden relative", data: { confirm: "いいねを解除しますか？" } do %>
+                    <%= image_tag "heart.png", alt: "いいね解除", class: "absolute inset-0 h-full w-full" %>
+                    <div class="absolute inset-0 bg-gray-500 opacity-0 hover:opacity-30"></div>
+                  <% end %>
+                <% else %>
+                  <%= link_to comment_likes_path(comment), method: :post, class: "bg-white h-12 w-12 rounded-full overflow-hidden relative" do %>
+                    <%= image_tag "heart_frame.png", alt: "いいね", class: "absolute inset-0 h-full w-full" %>
+                    <div class="absolute inset-0 bg-gray-500 opacity-0 hover:opacity-30"></div>
+                  <% end %>
+                <% end %>
+              <% end %>
+              <% if current_user == comment.user || current_user == @post.user %>
+                <%= link_to 'コメントを削除', comment_path(comment), method: :delete, data: { confirm: "本当に削除しますか？" }, class: "text-white bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-sm font-medium" %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <!-- コメントフォーム -->
+      <%= form_with(model: [ @post, Comment.new ], local: true) do |form| %>
+        <div class="mb-3">
+          <%= form.text_area :body, rows: 4, placeholder: "コメントを追加...", class: "border-4 border-gray-300 form-input w-full rounded" %>
+        </div>
+        <%= form.submit "コメント投稿", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-2" %>
+      <% end %>
+    </div>
+  </div>
+<% else %>
+  <div class="container mx-auto p-6">
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-4">
+      <div>これは下書きです。</div>
+    </div>
+  </div>
+<% end %>
+
+
+
+
+</body>

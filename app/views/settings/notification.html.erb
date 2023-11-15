@@ -1,0 +1,60 @@
+<head>
+  <!-- Tailwind CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<%= render 'shared/header' %>
+<%= render 'shared/header_settings' %>
+
+<div class="container mx-auto my-8 p-8 bg-white shadow-md rounded">
+  <h2 class="text-3xl font-semibold mb-6">通知設定</h2>
+
+  <%= form_with(model: @notification, url: update_notification_settings_path, method: :patch, local: true, class: "space-y-4") do |form| %>
+    
+    <div id="error_explanation">
+      <% if @notification.errors.any? %>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong class="font-bold">Oops!</strong>
+          <span class="block sm:inline"><%= pluralize(@notification.errors.count, "error") %> prohibited this post from being saved:</span>
+          <ul class="list-disc list-inside mt-2">
+            <% @notification.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+
+    
+    <% (1..6).each do |i| %>
+      <div class="field">
+        <%= form.label "email#{i}", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.text_field "email#{i}", class: "mt-1 block w-full border-4 border-gray-300 rounded-md shadow-sm" %>
+      </div>
+    <% end %>
+
+    <div class="flex items-center mb-4">
+      <%= form.label :like, class: "mr-2 text-sm font-medium text-gray-700" %>
+      <%= form.check_box :like, class: "border-4 border-gray-300 rounded text-blue-600 shadow-sm" %>
+    </div>
+
+    <div class="flex items-center mb-4">
+      <%= form.label :comment, class: "mr-2 text-sm font-medium text-gray-700" %>
+      <%= form.check_box :comment, class: "border-4 border-gray-300 rounded text-blue-600 shadow-sm" %>
+    </div>
+
+    <!--いらない-->
+    <div class="flex items-center mb-4 hidden">
+      <%= form.label :answer, class: "mr-2 text-sm font-medium text-gray-700" %>
+      <%= form.check_box :answer, class: "border-4 border-gray-300 rounded text-blue-600 shadow-sm" %>
+    </div>
+
+    <div class="flex justify-end mt-6">
+      <%= form.submit "保存", class: "px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring" %>
+    </div>
+  <% end %>
+</div>
+
+</body>

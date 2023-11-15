@@ -1,0 +1,7 @@
+<!-- app/views/notification_mailer/comment_notification.html.erb -->
+<h1>コメントの通知</h1>
+<h2>あなたは<%= @comment.user.username %>です。</h2>
+<p>コメントがついた記事（質問）タイトル: <%= @comment.post.title %></p>
+<p>コメント者: <%= @comment.user.username %></p>
+<p>コメント内容: <%= @comment.body %></p>
+
